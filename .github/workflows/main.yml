@@ -23,12 +23,12 @@ jobs:
             is_windows: true
 
           # 3. macOS Intel (x86_64)
-          - os: macos-13
+          - os: macOS-15-intel
             arch: x86_64
             is_mac: true
 
           # 4. macOS Apple Silicon (arm64)
-          - os: macos-14
+          - os: macOS-latest
             arch: arm64
             is_mac: true
 
@@ -52,12 +52,13 @@ jobs:
     - name: (Linux) Install Rust (musl-native)
       if: matrix.is_linux
       run: |
-        curl --proto '=https' --tlsv1.2 -sSf https://rustup.rs | sh -s -- -y --default-toolchain stable
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o rustup-init.sh
+        sh rustup-init.sh -y --default-toolchain stable
         echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
     - name: (Non-Linux) Set up Haskell (GHC 9.12.2)
       if: "!matrix.is_linux"
-      uses: haskell/actions/setup@v2
+      uses: haskell-actions/setup@v2
       with:
         ghc-version: '9.12.2'
         cabal-version: '3.14.2.0'
