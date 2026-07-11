@@ -42,7 +42,7 @@ jobs:
           apk add --no-cache zlib zlib-dev zlib-static gmp gmp-dev ncurses-static
 
     - name: Checkout code  
-      run: git clone https://codeberg.org/uzu/zwirn
+      run: git clone https://codeberg.org/polymorphicengine/haskell-doux
 
     # --- COMPILER TOOLCHAINS EINRICHTEN ---
     - name: (Non-Linux) Set up Rust
@@ -76,8 +76,9 @@ jobs:
     - name: Build Rust Static Library
       shell: bash
       run: |
-        cd doux-ffi
+        cd haskell-doux/doux-ffi
         cargo build --release
+        cd ..
 
     - name: (Linux/macOS) Generate cabal.project.local
       if: matrix.is_linux || matrix.is_mac
