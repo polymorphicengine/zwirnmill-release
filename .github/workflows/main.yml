@@ -39,7 +39,7 @@ jobs:
       if: matrix.is_linux
       run:  |
           apk add --no-cache curl gcc g++ gmp-dev ncurses-dev libffi-dev make xz gzip tar perl git bash sudo binutils-gold
-          apk add --no-cache zlib zlib-dev zlib-static gmp gmp-dev ncurses-static pkgconf alsa-lib-dev jack-dev pipewire-dev
+          apk add --no-cache zlib zlib-dev zlib-static gmp gmp-dev ncurses-static pkgconf alsa-lib-dev jack-dev pipewire-dev clang-dev llvm18-dev
 
     - name: Checkout code  
       run: git clone https://codeberg.org/polymorphicengine/haskell-doux
