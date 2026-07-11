@@ -62,9 +62,11 @@ jobs:
         ghc-version: '9.12.2'
         cabal-version: '3.14.2.0'
 
+    - name: (Linux) Set up GHCUP
+      uses: haskell/ghcup-setup@v1
+
     - name: (Linux) Set up Haskell
       if: matrix.is_linux
-      uses: haskell/ghcup-setup@v1
       run: |
           ghcup install ghc '9.12.2'
           ghcup set ghc '9.12.2'
