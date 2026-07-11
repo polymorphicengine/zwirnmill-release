@@ -44,7 +44,6 @@ jobs:
     - name: Checkout code  
       run: git clone https://codeberg.org/polymorphicengine/haskell-doux
 
-    # --- COMPILER TOOLCHAINS EINRICHTEN ---
     - name: (Non-Linux) Set up Rust
       if: "!matrix.is_linux"
       uses: dtolnay/rust-toolchain@stable
@@ -77,9 +76,8 @@ jobs:
     - name: Build Rust Static Library
       shell: bash
       env:
-        LIBCLANG_PATH: /usr/lib
-        LIBCLANG_STATIC_PATH: /usr/lib
-        BINDGEN_EXTRA_CLANG_ARGS: "-I/usr/include"
+        LIBCLANG_PATH: /usr/lib/llvm18/lib
+        BINDGEN_EXTRA_CLANG_ARGS: "-I/usr/include -I/usr/lib/llvm18/include"
       run: |
         cd haskell-doux/doux-ffi
         cargo build --release
