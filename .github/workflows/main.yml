@@ -39,7 +39,7 @@ jobs:
       if: matrix.is_linux
       run:  |
           apk add --no-cache curl gcc g++ gmp-dev ncurses-dev libffi-dev make xz gzip tar perl git bash sudo binutils-gold
-          apk add --no-cache zlib zlib-dev zlib-static gmp gmp-dev ncurses-static
+          apk add --no-cache zlib zlib-dev zlib-static gmp gmp-dev ncurses-static pkgconf alsa-lib-dev
 
     - name: Checkout code  
       run: git clone https://codeberg.org/polymorphicengine/haskell-doux
@@ -78,12 +78,13 @@ jobs:
       run: |
         cd haskell-doux/doux-ffi
         cargo build --release
-        cd ..
 
     - name: (Linux/macOS) Generate cabal.project.local
       if: matrix.is_linux || matrix.is_mac
       shell: bash
       run: |
+        cd haskell-doux
+        rm cabal.project.local
         echo "package haskell-doux" > cabal.project.local
         echo "  extra-lib-dirs: ${{ github.workspace }}/haskell-doux/doux-ffi/target/release" >> cabal.project.local
         cat cabal.project.local
@@ -92,7 +93,8 @@ jobs:
       if: matrix.is_windows
       shell: bash
       run: |
-        # Windows nutzt Backslashes; wir müssen den GitHub Workspace-Pfad für Cabal escapen
+        cd haskell-doux
+        rm cabal.project.local
         RAW_PATH="${{ github.workspace }}/haskell-doux/doux-ffi/target/release"
         WIN_PATH=$(echo "$RAW_PATH" | sed 's/\//\\/g')
         
