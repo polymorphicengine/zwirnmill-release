@@ -107,4 +107,4 @@ jobs:
       run: |
         cd haskell-doux
         cabal update
-        cabal build zwirn-doux
+        cabal build
