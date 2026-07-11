@@ -105,5 +105,6 @@ jobs:
     - name: Build Haskell Project
       shell: bash
       run: |
+        cd haskell-doux
         cabal update
         cabal build zwirn-doux
