@@ -76,7 +76,7 @@ jobs:
     - name: Build Rust Static Library
       shell: bash
       run: |
-        cd haskell-doux/doux-ffi
+        cd doux-ffi
         cargo build --release
 
     - name: (Linux/macOS) Generate cabal.project.local
