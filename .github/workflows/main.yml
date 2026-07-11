@@ -73,8 +73,13 @@ jobs:
           ghcup set ghc '9.12.2'
           ghcup install cabal '3.14.2.0'
 
+
     - name: Build Rust Static Library
       shell: bash
+      env:
+        LIBCLANG_PATH: /usr/lib
+        LIBCLANG_STATIC_PATH: /usr/lib
+        BINDGEN_EXTRA_CLANG_ARGS: "-I/usr/include"
       run: |
         cd haskell-doux/doux-ffi
         cargo build --release
