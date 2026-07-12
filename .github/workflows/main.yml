@@ -17,67 +17,42 @@ jobs:
             arch: x86_64
             is_linux: true
 
-          # 2. Windows Intel 64-bit
           - os: windows-latest
             arch: x86_64
             is_windows: true
 
-          # 3. macOS Intel (x86_64)
           - os: macOS-15-intel
             arch: x86_64
             is_mac: true
 
-          # 4. macOS Apple Silicon (arm64)
           - os: macOS-latest
             arch: arm64
             is_mac: true
 
-    container: ${{ matrix.is_linux && 'alpine:3.20' || null }}
-
     steps:
-    - name: (Linux) install native deps
+    - name: (Linux) Install Native Deps
       if: matrix.is_linux
-      run:  |
-          apk add --no-cache curl gcc g++ gmp-dev ncurses-dev libffi-dev make xz gzip tar perl git bash sudo binutils-gold clang18-libclang
-          apk add --no-cache zlib zlib-dev zlib-static gmp gmp-dev ncurses-static pkgconf alsa-lib-dev jack-dev pipewire-dev clang-dev llvm18-dev
-
+      run: |
+        apt-get update
+        apt-get install -y --no-install-recommends \
+          bash curl git make gcc g++ g++-multilib sudo tar xz-utils libgmp-dev libffi-dev libncurses-dev \
+          pkg-config libasound2-dev libjack-jackd2-dev libpipewire-0.3-dev \
+ 
     - name: Checkout code  
       run: git clone https://codeberg.org/polymorphicengine/haskell-doux
 
-    - name: (Non-Linux) Set up Rust
-      if: "!matrix.is_linux"
+    - name: Set up Rust
       uses: dtolnay/rust-toolchain@stable
 
-    - name: (Linux) Install Rust (musl-native)
-      if: matrix.is_linux
-      run: |
-        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o rustup-init.sh
-        sh rustup-init.sh -y --default-toolchain stable
-        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-
-    - name: (Non-Linux) Set up Haskell (GHC 9.12.2)
-      if: "!matrix.is_linux"
+    - name: Set up Haskell (GHC 9.12.2)
       uses: haskell-actions/setup@v2
       with:
         ghc-version: '9.12.2'
         cabal-version: '3.14.2.0'
 
-    - name: (Linux) Set up GHCUP
-      uses: haskell/ghcup-setup@v1
-
-    - name: (Linux) Set up Haskell
-      if: matrix.is_linux
-      run: |
-          ghcup install ghc '9.12.2'
-          ghcup set ghc '9.12.2'
-          ghcup install cabal '3.14.2.0'
-
 
     - name: Build Rust Static Library
       shell: bash
-      env:
-        LIBCLANG_PATH: /usr/lib/llvm18/lib
-        BINDGEN_EXTRA_CLANG_ARGS: "-I/usr/include -I/usr/lib/llvm18/include"
       run: |
         cd haskell-doux/doux-ffi
         cargo build --release
