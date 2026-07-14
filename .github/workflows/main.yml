@@ -52,6 +52,10 @@ jobs:
            git clone https://codeberg.org/polymorphicengine/haskell-doux
            git clone https://codeberg.org/uzu/zwirn
 
+    - name: If nightly release, checkout dev branch
+      if: contains(github.ref_name, 'nightly')
+      run: cd zwirn && git checkout dev
+
     - name: Set up Rust
       uses: dtolnay/rust-toolchain@stable
 
@@ -121,10 +125,6 @@ jobs:
     - name: Update cabal cache
       run: cabal update  
       shell: bash
-
-    - name: If nightly release, checkout dev branch
-      if: contains(github.ref_name, 'nightly')
-      run: cd zwirn && git checkout dev
       
     - name: Dry run of build
       run: cd zwirn && cabal build zwirnmill --dry-run --ghc-options='-split-sections -optl-static'
