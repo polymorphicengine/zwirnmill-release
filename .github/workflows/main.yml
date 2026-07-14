@@ -65,6 +65,12 @@ jobs:
         ghc-version: ${{ env.ghc }}
         cabal-version: ${{ env.cabal }}
 
+    - name: (Linux) install dependencies
+      if: matrix.is_linux
+      run: |
+        sudo add-apt-repository ppa:pipewire-debian/pipewire-upstream -y
+        sudo apt-get update
+        sudo apt-get install -y libpipewire-0.3-dev libasound2-dev
 
     - name: Build Rust Static Library
       shell: bash
