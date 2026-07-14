@@ -10,6 +10,8 @@ jobs:
   build:
     name: Build on ${{ matrix.os }} (${{ matrix.arch }})
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
     env:
       ghc: "9.12.2"
       cabal: "3.14.2.0"
@@ -178,6 +180,6 @@ jobs:
       run: cd build && strip ${{ matrix.name }}
         
     - name: Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         files: build/${{ matrix.name }}
