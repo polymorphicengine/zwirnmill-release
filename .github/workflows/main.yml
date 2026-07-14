@@ -63,6 +63,7 @@ jobs:
 
     - name: Set up Haskell (GHC 9.12.2)
       uses: haskell-actions/setup@v2
+      id: setup-haskell
       with:
         ghc-version: ${{ env.ghc }}
         cabal-version: ${{ env.cabal }}
@@ -147,30 +148,28 @@ jobs:
       shell: bash
       
     - name: Dry run of build
-      run: cd zwirn && cabal build zwirnmill --enable-executable-stripping --ghc-options='-O2 -split-sections -funbox-strict-fields'
+      run: cd zwirn && cabal build zwirnmill --dry-run --enable-executable-stripping --ghc-options='-O2 -split-sections -funbox-strict-fields'
 
     - name: Restore cached dependencies
-      uses: actions/cache/restore@v4
+      uses: actions/cache/restore@v6
       id: cache
       env:
-        key: ${{ contains(github.ref_name, 'nightly') }}-${{ runner.os }}-ghc-${{ env.ghc }}-cabal-${{ env.cabal }}
+          key: ${{ contains(github.ref_name, 'nightly') }}-${{ runner.os }}-ghc-${{ steps.setup-haskell.outputs.ghc-version }}-cabal-${{ steps.setup-haskell.outputs.cabal-version }}
       with:
-        path: /github/home/.local/state/cabal/store
-        key: ${{ env.key }}-plan-${{ hashFiles('**/plan.json') }}
-        restore-keys: ${{ env.key }}-
+          path: ${{ steps.setup-haskell.outputs.cabal-store }}
+          key: ${{ env.key }}-plan-${{ hashFiles('**/plan.json') }}
+          restore-keys: ${{ env.key }}-
 
     - name: Install dependencies
-        # If we had an exact cache hit, the dependencies will be up to date.
       if: steps.cache.outputs.cache-hit != 'true'
-      run: cd zwirn && cabal build zwirnmill --enable-executable-stripping --ghc-options='-O2 -split-sections -funbox-strict-fields'
-      # Cache dependencies already here, so that we do not have to rebuild them should the subsequent steps fail.
+      run: cd zwirn && cabal build zwirnmill --only-dependencies --enable-executable-stripping --ghc-options='-O2 -split-sections -funbox-strict-fields'
+
     - name: Save cached dependencies
-      uses: actions/cache/save@v4
-       # If we had an exact cache hit, trying to save the cache would error because of key clash.
+      uses: actions/cache/save@v6
       if: steps.cache.outputs.cache-hit != 'true'
       with:
-        path: /github/home/.local/state/cabal/store
-        key: ${{ steps.cache.outputs.cache-primary-key }}
+          path: ${{ steps.setup-haskell.outputs.cabal-store }}
+          key: ${{ steps.cache.outputs.cache-primary-key }}
 
     - name: cabal build
       run: cd zwirn && cabal build zwirnmill --enable-executable-stripping --ghc-options='-O2 -split-sections -funbox-strict-fields'
