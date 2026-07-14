@@ -23,25 +23,21 @@ jobs:
             arch: x86_64
             name: zwirnmill-${{ github.ref_name }}-x86_64-linux
             is_linux: true
-            cabal_flags: "--enable-executable-stripping --disable-shared --enable-executable-static --ghc-options='-split-sections -optl-static'"
 
           - os: windows-latest
             arch: x86_64
             name: zwirnmill-${{ github.ref_name }}-x86_64-windows.exe
             is_windows: true
-            cabal_flags: "--enable-executable-stripping"
 
           - os: macOS-15-intel
             arch: x86_64
             name: zwirnmill-${{ github.ref_name }}-x86_64-macos
             is_mac: true
-            cabal_flags: "--enable-executable-stripping"
 
           - os: macOS-latest
             arch: arm64
             name: zwirnmill-${{ github.ref_name }}-arm64-macos
             is_mac: true
-            cabal_flags: "--enable-executable-stripping"
 
     steps:
     - name: (Linux) Install Native Deps
@@ -151,7 +147,7 @@ jobs:
       shell: bash
       
     - name: Dry run of build
-      run: cd zwirn && cabal build zwirnmill ${{ matrix.cabal_flags }}
+      run: cd zwirn && cabal build zwirnmill --enable-executable-stripping --ghc-options='-O2 -split-sections -funbox-strict-fields'
 
     - name: Restore cached dependencies
       uses: actions/cache/restore@v4
@@ -166,7 +162,7 @@ jobs:
     - name: Install dependencies
         # If we had an exact cache hit, the dependencies will be up to date.
       if: steps.cache.outputs.cache-hit != 'true'
-      run: cd zwirn && cabal build zwirnmill ${{ matrix.cabal_flags }}
+      run: cd zwirn && cabal build zwirnmill --enable-executable-stripping --ghc-options='-O2 -split-sections -funbox-strict-fields'
       # Cache dependencies already here, so that we do not have to rebuild them should the subsequent steps fail.
     - name: Save cached dependencies
       uses: actions/cache/save@v4
@@ -177,7 +173,7 @@ jobs:
         key: ${{ steps.cache.outputs.cache-primary-key }}
 
     - name: cabal build
-      run: cd zwirn && cabal build zwirnmill ${{ matrix.cabal_flags }}
+      run: cd zwirn && cabal build zwirnmill --enable-executable-stripping --ghc-options='-O2 -split-sections -funbox-strict-fields'
       
     - name: set build location to var
       run: cd zwirn && echo "bin_path=$(cabal list-bin zwirnmill)" >> "$GITHUB_ENV"
