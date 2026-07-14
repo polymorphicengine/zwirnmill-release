@@ -91,7 +91,8 @@ jobs:
       shell: bash
       run: |
         cd haskell-doux/doux-ffi
-        RUSTFLAGS="-C no-vectorize-loops" cargo build --release --target x86_64-pc-windows-gnu
+        cargo build --release --target x86_64-pc-windows-gnu
+        llvm-objcopy --remove-section=.drectve target/x86_64-pc-windows-gnu/release/libdoux_ffi.a
 
     - name: (Linux/macOS) Generate cabal.project.local
       if: matrix.is_linux || matrix.is_mac
