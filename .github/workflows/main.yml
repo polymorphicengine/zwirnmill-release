@@ -173,18 +173,23 @@ jobs:
           key: ${{ steps.cache.outputs.cache-primary-key }}
 
     - name: cabal build
+      shell: bash
       run: cd zwirn && cabal build zwirnmill --enable-executable-stripping --ghc-options='-O2 -split-sections -funbox-strict-fields'
       
     - name: set build location to var
+      shell: bash
       run: cd zwirn && echo "bin_path=$(cabal list-bin zwirnmill)" >> "$GITHUB_ENV"
 
     - name: make directory
+      shell: bash
       run: mkdir build
 
     - name: move executable
+      shell: bash
       run: mv "$bin_path" build/${{ matrix.name }}
         
     - name: strip executable
+      if: matrix.is_linux || matrix.is_mac
       run: cd build && strip ${{ matrix.name }}
         
     - name: Release
