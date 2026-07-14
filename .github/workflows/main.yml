@@ -21,7 +21,7 @@ jobs:
             arch: x86_64
             name: zwirnmill-${{ github.ref_name }}-x86_64-linux
             is_linux: true
-            cabal_flags: "--enable-executable-stripping --enable-executable-static --ghc-options='-split-sections -optl-static'"
+            cabal_flags: "--enable-executable-stripping --disable-shared --enable-executable-static --ghc-options='-split-sections -optl-static'"
 
           - os: windows-latest
             arch: x86_64
