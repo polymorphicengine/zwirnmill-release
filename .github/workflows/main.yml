@@ -166,6 +166,36 @@ jobs:
         $douxDir = "$env:GITHUB_WORKSPACE\haskell-doux\doux-ffi\target\x86_64-pc-windows-gnu\release"
         Write-Host "Adding doux-ffi release dir: $douxDir"
         Add-Content $env:GITHUB_PATH $douxDir
+
+    - name: Verify dflayout.dll is built (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        $dll = "D:\a\zwirnmill-release\zwirnmill-release\haskell-doux\doux-ffi\target\x86_64-pc-windows-gnu\release\dflayout.dll"
+    
+        if (-not (Test-Path $dll)) {
+          Write-Host "::error::dflayout.dll does not exist at $dll"
+          exit 1
+        }
+    
+        $item = Get-Item $dll
+        Write-Host "dflayout.dll found: $($item.Length) bytes, last written $($item.LastWriteTime)"
+        Write-Host "Current time: $(Get-Date)"
+
+    - name: Diagnose dflayout.dll dependencies (Windows)
+      if: matrix.is_windows
+      shell: pwsh
+      run: |
+        $dll = "D:\a\zwirnmill-release\zwirnmill-release\haskell-doux\doux-ffi\target\x86_64-pc-windows-gnu\release\dflayout.dll"
+    
+        Write-Host "=== Dependencies declared by dflayout.dll ==="
+        & "C:\mingw64\bin\objdump.exe" -p $dll | Select-String "DLL Name"
+    
+        Write-Host "`n=== Contents of C:\mingw64\bin ==="
+        Get-ChildItem "C:\mingw64\bin\*.dll" | Select-Object Name
+    
+        Write-Host "`n=== Current PATH ==="
+        $env:PATH -split ';'
           
     - name: Dry run of build
       run: cd zwirn && cabal build zwirnmill --dry-run --enable-executable-stripping --ghc-options='-O2 -split-sections -funbox-strict-fields'
