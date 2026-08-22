@@ -149,7 +149,24 @@ jobs:
     - name: Update cabal cache
       run: cabal update  
       shell: bash
-      
+
+    - name: Add MinGW and doux-ffi DLL directories to PATH (Windows)
+      if: matrix.is_windows
+      shell: pwsh
+      run: |
+        $gcc = Get-Command gcc.exe -ErrorAction SilentlyContinue
+        if ($gcc) {
+          $mingwBin = Split-Path $gcc.Source -Parent
+          Write-Host "Found MinGW bin at: $mingwBin"
+          Add-Content $env:GITHUB_PATH $mingwBin
+        } else {
+          Write-Host "::warning::gcc.exe not found on PATH; MinGW runtime DLLs may not resolve"
+        }
+    
+        $douxDir = "$env:GITHUB_WORKSPACE\haskell-doux\doux-ffi\target\x86_64-pc-windows-gnu\release"
+        Write-Host "Adding doux-ffi release dir: $douxDir"
+        Add-Content $env:GITHUB_PATH $douxDir
+          
     - name: Dry run of build
       run: cd zwirn && cabal build zwirnmill --dry-run --enable-executable-stripping --ghc-options='-O2 -split-sections -funbox-strict-fields'
 
