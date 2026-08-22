@@ -152,7 +152,7 @@ jobs:
       shell: bash
           
     - name: Dry run of build
-      run: cd zwirn && cabal build zwirnmill --dry-run --enable-executable-stripping --ghc-options='-O2 -split-sections -funbox-strict-fields'
+      run: cd zwirn && cabal build zwirnmill --dry-run --enable-executable-stripping --ghc-options='-O2 -split-sections -funbox-strict-fields -optl-static'
 
     - name: Restore cached dependencies
       uses: actions/cache/restore@v6
@@ -166,7 +166,7 @@ jobs:
 
     - name: Install dependencies
       if: steps.cache.outputs.cache-hit != 'true'
-      run: cd zwirn && cabal build zwirnmill --only-dependencies --enable-executable-stripping --ghc-options='-O2 -split-sections -funbox-strict-fields'
+      run: cd zwirn && cabal build zwirnmill --only-dependencies --enable-executable-stripping --ghc-options='-O2 -split-sections -funbox-strict-fields -optl-static'
 
     - name: Save cached dependencies
       uses: actions/cache/save@v6
@@ -177,7 +177,7 @@ jobs:
 
     - name: cabal build
       shell: bash
-      run: cd zwirn && cabal build zwirnmill --enable-executable-stripping --ghc-options='-O2 -split-sections -funbox-strict-fields'
+      run: cd zwirn && cabal build zwirnmill --enable-executable-stripping --ghc-options='-O2 -split-sections -funbox-strict-fields -optl-static'
       
     - name: set build location to var
       shell: bash
