@@ -145,7 +145,20 @@ jobs:
         echo "  extra-lib-dirs: $WIN_PATH\\doux-ffi\\target\\x86_64-pc-windows-gnu\\release" >> cabal.project.local
     
         cat cabal.project.local
-          
+
+    - name: WINDOWS STUFF
+      if: matrix.is_windows
+      shell: pwsh
+      run: |
+        $bytes = [System.IO.File]::ReadAllBytes("D:\a\zwirnmill-release\zwirnmill-release\haskell-doux\doux-ffi\target\x86_64-pc-windows-gnu\release\libdoux_ffi.a")
+        $text = [System.Text.Encoding]::ASCII.GetString($bytes)
+        if ($text -match "dflayout") {
+            $idx = $text.IndexOf("dflayout")
+            Write-Host "FOUND at byte offset $idx"
+            Write-Host "Context: $($text.Substring([Math]::Max(0,$idx-40), 100))"
+        } else {
+            Write-Host "NOT FOUND anywhere in raw archive bytes"
+        }
 
     - name: Update cabal cache
       run: cabal update  
