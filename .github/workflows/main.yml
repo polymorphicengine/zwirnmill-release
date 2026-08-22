@@ -167,20 +167,21 @@ jobs:
         Write-Host "Adding doux-ffi release dir: $douxDir"
         Add-Content $env:GITHUB_PATH $douxDir
 
-    - name: Verify dflayout.dll is built (Windows)
+    - name: Locate dflayout.dll anywhere in the checkout (Windows)
       if: runner.os == 'Windows'
       shell: pwsh
       run: |
-        $dll = "D:\a\zwirnmill-release\zwirnmill-release\haskell-doux\doux-ffi\target\x86_64-pc-windows-gnu\release\dflayout.dll"
+        Write-Host "=== Searching entire workspace for dflayout* files ==="
+        Get-ChildItem -Path "D:\a\zwirnmill-release\zwirnmill-release" -Recurse -Filter "dflayout*" -ErrorAction SilentlyContinue |
+          Select-Object FullName, Length, LastWriteTime
     
-        if (-not (Test-Path $dll)) {
-          Write-Host "::error::dflayout.dll does not exist at $dll"
-          exit 1
-        }
+        Write-Host "`n=== Searching for any .dll produced by the Rust build ==="
+        Get-ChildItem -Path "D:\a\zwirnmill-release\zwirnmill-release\haskell-doux" -Recurse -Filter "*.dll" -ErrorAction SilentlyContinue |
+          Select-Object FullName, Length, LastWriteTime
     
-        $item = Get-Item $dll
-        Write-Host "dflayout.dll found: $($item.Length) bytes, last written $($item.LastWriteTime)"
-        Write-Host "Current time: $(Get-Date)"
+        Write-Host "`n=== Searching for 'dflayout' as a crate/dependency name ==="
+        Get-ChildItem -Path "D:\a\zwirnmill-release\zwirnmill-release" -Recurse -Include "Cargo.toml","Cargo.lock" -ErrorAction SilentlyContinue |
+          Select-String -Pattern "dflayout"
 
     - name: Diagnose dflayout.dll dependencies (Windows)
       if: matrix.is_windows
