@@ -97,6 +97,51 @@ jobs:
         cargo build --release --target x86_64-pc-windows-gnu
         llvm-objcopy --remove-section=.drectve target/x86_64-pc-windows-gnu/release/libdoux_ffi.a
 
+    - name: (Windows) Strip unused dflayout.dll import stub from archive
+      if: matrix.is_windows
+      shell: bash
+      run: |
+        cd haskell-doux/doux-ffi
+        ARCHIVE="target/x86_64-pc-windows-gnu/release/libdoux_ffi.a"
+        WORKDIR=$(mktemp -d)
+
+        cp "$ARCHIVE" "$WORKDIR/archive.a"
+        pushd "$WORKDIR"
+        ar x archive.a
+
+        echo "=== Scanning extracted archive members for dflayout references ==="
+        TO_REMOVE=()
+        for f in *.o; do
+          if grep -qa "dflayout" "$f"; then
+            echo "Found dflayout reference in: $f"
+            TO_REMOVE+=("$f")
+          fi
+        done
+        popd
+
+        if [ ${#TO_REMOVE[@]} -eq 0 ]; then
+          echo "::warning::No archive member referencing dflayout found - nothing removed"
+        else
+          for member in "${TO_REMOVE[@]}"; do
+            echo "Removing member: $member"
+            ar d "$ARCHIVE" "$member"
+          done
+          # Regenerate the archive symbol index after modification
+          ranlib "$ARCHIVE"
+        fi
+
+        echo "=== Verifying removal ==="
+        WORKDIR2=$(mktemp -d)
+        cp "$ARCHIVE" "$WORKDIR2/archive.a"
+        pushd "$WORKDIR2"
+        ar x archive.a
+        if grep -qla "dflayout" *.o 2>/dev/null; then
+          echo "::warning::dflayout reference still present after removal attempt"
+        else
+          echo "Confirmed: no remaining dflayout references"
+        fi
+        popd
+
     - name: (Linux/macOS) Generate cabal.project.local
       if: matrix.is_linux || matrix.is_mac
       shell: bash
@@ -145,14 +190,6 @@ jobs:
         echo "  extra-lib-dirs: $WIN_PATH\\doux-ffi\\target\\x86_64-pc-windows-gnu\\release" >> cabal.project.local
     
         cat cabal.project.local
-
-    - name: Show windows-sys feature dependency chain
-      if: matrix.is_windows
-      shell: bash
-      run: |
-         cd haskell-doux/doux-ffi
-         cargo tree -e features -i windows-sys 2>/dev/null || true
-         cargo tree -e features -i windows 2>/dev/null || true
 
     - name: Update cabal cache
       run: cabal update  
