@@ -5,6 +5,7 @@ on:
     tags:
       - "*.*.*.*"
       - "*.*.*.*-nightly"
+  workflow_dispatch:
 
 jobs:
   build:
