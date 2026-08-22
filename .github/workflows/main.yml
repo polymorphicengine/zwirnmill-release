@@ -146,42 +146,16 @@ jobs:
     
         cat cabal.project.local
 
-    - name: Search Cargo registry sources for "dflayout" (Windows)
+    - name: Check for dflayout.dll on the runner (Windows)
       if: matrix.is_windows
       shell: pwsh
       run: |
-        Write-Host "=== Searching CARGO_HOME registry source for 'dflayout' ==="
-        $registrySrc = Join-Path $env:CARGO_HOME "registry\src"
-
-        if (-not (Test-Path $registrySrc)) {
-          Write-Host "::warning::No registry src directory found at $registrySrc"
+        $sys32 = "C:\Windows\System32\dflayout.dll"
+        if (Test-Path $sys32) {
+          Write-Host "dflayout.dll IS present at $sys32"
+          & "C:\mingw64\bin\objdump.exe" -p $sys32 | Select-String "DLL Name"
         } else {
-          $matches = Get-ChildItem -Path $registrySrc -Recurse -Include "*.rs" -ErrorAction SilentlyContinue |
-            Select-String -Pattern "dflayout" -SimpleMatch
-
-          if ($matches) {
-            Write-Host "=== FOUND matches ==="
-            foreach ($m in $matches) {
-              Write-Host "`nFile: $($m.Path)"
-              Write-Host "Line $($m.LineNumber): $($m.Line.Trim())"
-            }
-          } else {
-            Write-Host "No matches for 'dflayout' found in registry sources."
-          }
-        }
-
-        Write-Host "`n=== Also checking vendored/local crate sources, if any ==="
-        $vendorMatches = Get-ChildItem -Path "$env:GITHUB_WORKSPACE" -Recurse -Include "*.rs" -ErrorAction SilentlyContinue |
-          Select-String -Pattern "dflayout" -SimpleMatch
-
-        if ($vendorMatches) {
-          Write-Host "=== FOUND matches in workspace .rs files ==="
-          foreach ($m in $vendorMatches) {
-            Write-Host "`nFile: $($m.Path)"
-            Write-Host "Line $($m.LineNumber): $($m.Line.Trim())"
-          }
-        } else {
-          Write-Host "No matches for 'dflayout' found in workspace .rs files."
+          Write-Host "::warning::dflayout.dll is NOT present on this runner at $sys32"
         }
 
     - name: Update cabal cache
