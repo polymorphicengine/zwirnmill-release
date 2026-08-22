@@ -146,17 +146,13 @@ jobs:
     
         cat cabal.project.local
 
-    - name: Check for dflayout.dll on the runner (Windows)
+    - name: Show windows-sys feature dependency chain
       if: matrix.is_windows
-      shell: pwsh
+      shell: bash
       run: |
-        $sys32 = "C:\Windows\System32\dflayout.dll"
-        if (Test-Path $sys32) {
-          Write-Host "dflayout.dll IS present at $sys32"
-          & "C:\mingw64\bin\objdump.exe" -p $sys32 | Select-String "DLL Name"
-        } else {
-          Write-Host "::warning::dflayout.dll is NOT present on this runner at $sys32"
-        }
+         cd haskell-doux/doux-ffi
+         cargo tree -e features -i windows-sys 2>/dev/null || true
+         cargo tree -e features -i windows 2>/dev/null || true
 
     - name: Update cabal cache
       run: cabal update  
